@@ -197,5 +197,6 @@ if __name__ == '__main__':
     bo_mean.plot(ro,boccupancy_mean)
     bo_mean.set_xlabel("ro")
     bo_mean.set_ylabel("mean buffer occupancy")
+    bo_mean.grid()
 
     pyplot.show()
