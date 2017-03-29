@@ -1,0 +1,100 @@
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 1.000000 
+Number of requests: 978 	Number of requests satisfied: 978 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 1.021017
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 1.473684 
+Number of requests: 981 	Number of requests satisfied: 981 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 1.616711
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 1.947368 
+Number of requests: 981 	Number of requests satisfied: 981 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 2.277796
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 2.421053 
+Number of requests: 981 	Number of requests satisfied: 979 
+Number of requests not satisfied: 2 
+Average RESPONSE TIME for requests: 2.969140
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 2.894737 
+Number of requests: 954 	Number of requests satisfied: 954 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 3.497950
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 3.368421 
+Number of requests: 948 	Number of requests satisfied: 948 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 4.279326
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 3.842105 
+Number of requests: 984 	Number of requests satisfied: 984 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 5.903145
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 4.315789 
+Number of requests: 971 	Number of requests satisfied: 970 
+Number of requests not satisfied: 1 
+Average RESPONSE TIME for requests: 6.852875
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 4.789474 
+Number of requests: 986 	Number of requests satisfied: 985 
+Number of requests not satisfied: 1 
+Average RESPONSE TIME for requests: 8.648751
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 5.263158 
+Number of requests: 958 	Number of requests satisfied: 958 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 9.587624
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 5.736842 
+Number of requests: 972 	Number of requests satisfied: 971 
+Number of requests not satisfied: 1 
+Average RESPONSE TIME for requests: 11.883357
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 6.210526 
+Number of requests: 983 	Number of requests satisfied: 980 
+Number of requests not satisfied: 3 
+Average RESPONSE TIME for requests: 13.479906
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 6.684211 
+Number of requests: 998 	Number of requests satisfied: 997 
+Number of requests not satisfied: 1 
+Average RESPONSE TIME for requests: 22.386355
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 7.157895 
+Number of requests: 962 	Number of requests satisfied: 961 
+Number of requests not satisfied: 1 
+Average RESPONSE TIME for requests: 18.778299
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 7.631579 
+Number of requests: 992 	Number of requests satisfied: 988 
+Number of requests not satisfied: 4 
+Average RESPONSE TIME for requests: 30.545110
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 8.105263 
+Number of requests: 980 	Number of requests satisfied: 976 
+Number of requests not satisfied: 4 
+Average RESPONSE TIME for requests: 31.164966
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 8.578947 
+Number of requests: 984 	Number of requests satisfied: 984 
+Number of requests not satisfied: 0 
+Average RESPONSE TIME for requests: 41.853127
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 9.052632 
+Number of requests: 1040 	Number of requests satisfied: 1035 
+Number of requests not satisfied: 5 
+Average RESPONSE TIME for requests: 75.644916
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 9.526316 
+Number of requests: 1044 	Number of requests satisfied: 1034 
+Number of requests not satisfied: 10 
+Average RESPONSE TIME for requests: 137.412416
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 10.000000 
+Number of requests: 1056 	Number of requests satisfied: 987 
+Number of requests not satisfied: 69 
+Average RESPONSE TIME for requests: 353.884005
+
