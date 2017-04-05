@@ -12,18 +12,18 @@ RANDOM_SEED = 7
 # ARRIVAL_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 NUM = 20
 
-SERVICE_TIME = [5.0] # it is the inverse of the service rate (speed)
-ARRIVAL_TIME = [2.0]
+SERVICE_TIME = [3.0] # it is the inverse of the service rate (speed)
+ARRIVAL_TIME = [10.0]
 #SERVICE_TIME = numpy.linspace(1.0, 10.0, num=NUM)
 #ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
 A = 1
 B = 5
-QCAPACITY = 1000
+QCAPACITY = 100
 
 
 NUM_SERVER = 1
-SIM_TIME = 100000
+SIM_TIME = 1000000
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     txt = open("result_simulation.txt", "w+")
     txt.truncate()
 
-    matrix = [[0 for x in range(NUM)] for y in range(NUM)]
+    mean_response_time = numpy.zeros((NUM,NUM))
     boccupancy_mean = []
     ro = []
 
@@ -156,12 +156,12 @@ if __name__ == '__main__':
 
             # Calculate Vector of response time
             response_time = [i[0] - i[1] for i in zip(webserver.service_time, request.inter_arrival)]
-            matrix[x][y] = numpy.mean(response_time)
+            mean_response_time[x,y] = numpy.mean(response_time)
 
             boccupancy_mean.append(numpy.mean(webserver.boccupancy))
             ro.append(servicerate / arrivalrate)
 
-            txt.write("Average RESPONSE TIME for requests: %f" % matrix[x][y])
+            txt.write("Average RESPONSE TIME for requests: %f" % mean_response_time[x,y])
             txt.write("\n\n")
 
             # #plot Response Time
@@ -181,34 +181,42 @@ if __name__ == '__main__':
             # cdf.set_ylabel("P(Response Time <= x)")
             # cdf.set_ybound(0, 1)
             #
-            #plot buffer occupancy
-            fig2,(series, pdf, cdf) = pyplot.subplots(3, 1)
-
-            series.plot(webserver.boccupancy)
-            series.set_xlabel("Sample")
-            series.set_ylabel("Buffer-Occupancy")
-
-            pdf.hist(webserver.boccupancy, bins=100, normed= True)
-            pdf.set_xlabel("Time")
-            pdf.set_ylabel("PDF")
-            #pdf.set_xbound(0, 15)
-
-            cdf.hist(webserver.boccupancy, bins= 100, cumulative= True, normed= True)
-            cdf.set_xlabel("Time")
-            cdf.set_ylabel("P(Buffer-Occupancy <= x)")
-            cdf.set_ybound(0, 1)
-
-            pyplot.show()
+            # #plot buffer occupancy
+            # fig2,(series, pdf, cdf) = pyplot.subplots(3, 1)
+            #
+            # series.plot(webserver.boccupancy)
+            # series.set_xlabel("Sample")
+            # series.set_ylabel("Buffer-Occupancy")
+            #
+            # pdf.hist(webserver.boccupancy, bins=100, normed= True)
+            # pdf.set_xlabel("Time")
+            # pdf.set_ylabel("PDF")
+            # #pdf.set_xbound(0, 15)
+            #
+            # cdf.hist(webserver.boccupancy, bins= 100, cumulative= True, normed= True)
+            # cdf.set_xlabel("Time")
+            # cdf.set_ylabel("P(Buffer-Occupancy <= x)")
+            # cdf.set_ybound(0, 1)
+            #
+            #pyplot.show()
             y += 1
         x += 1
 
     print("Simulation ended! Plotting some results...")
 
-    # # plot mean number of customers in queueing line
-    # fig1, bo_mean = pyplot.subplots(1, 1)
-    # bo_mean.plot(ro, boccupancy_mean)
-    # bo_mean.set_xlabel("ro")
-    # bo_mean.set_ylabel("mean buffer occupancy")
-    # bo_mean.grid()
-    #
-    # pyplot.show()
+    #plot mean number of customers in queueing line
+    fig1, responsetime_mean = pyplot.subplots(1,1)
+    emp_rest, = responsetime_mean.plot(ro,mean_response_time[:,0],label='Empirical')
+    responsetime_mean.set_xlabel("ro")
+    responsetime_mean.set_ylabel("mean response time ")
+    responsetime_mean.grid()
+
+    #plot mean number of customers in queueing line
+    fig2, bo_mean = pyplot.subplots(1,1)
+    emp_bo, = bo_mean.plot(ro,boccupancy_mean, label='Empirical')
+    bo_mean.set_xlabel("ro")
+    bo_mean.set_ylabel("mean buffer occupancy")
+    bo_mean.grid()
+
+
+    pyplot.show()

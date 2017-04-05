@@ -10,16 +10,16 @@ RANDOM_SEED = 7
 
 #SERVICE_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 #ARRIVAL_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-NUM = 20
+NUM = 50
 
-#SERVICE_TIME = [10.0] # it is the inverse of the service rate (speed)
+#SERVICE_TIME = [5.0] # it is the inverse of the service rate (speed)
 ARRIVAL_TIME = [10.0]
 SERVICE_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 #ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
 
 NUM_SERVER = 1
-SIM_TIME = 10000
+SIM_TIME = 100000
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # WEB SERVER Class
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     txt=open("result_simulation.txt","w+")
     txt.truncate()
 
-    matrix = [[0 for x in range(NUM)] for y in range(NUM)]
+    mean_response_time = numpy.zeros((NUM,NUM))
     boccupancy_mean = []
     ro = []
 
@@ -143,12 +143,12 @@ if __name__ == '__main__':
 
             # Calculate Vector of response time
             response_time = [i[0] - i[1] for i in zip(webserver.service_time, request.inter_arrival)]
-            matrix[x][y] = numpy.mean(response_time)
+            mean_response_time[x,y] = numpy.mean(response_time)
 
             boccupancy_mean.append(numpy.mean(webserver.boccupancy))
             ro.append(servicerate/arrivalrate)
             
-            txt.write("Average RESPONSE TIME for requests: %f" %matrix[x][y])
+            txt.write("Average RESPONSE TIME for requests: %f" %mean_response_time[x,y])
             txt.write("\n\n")
 
             # #plot Response Time
@@ -193,10 +193,33 @@ if __name__ == '__main__':
     print("Simulation ended! Plotting some results...")
 
     #plot mean number of customers in queueing line
-    fig1, bo_mean = pyplot.subplots(1,1)
-    bo_mean.plot(ro,boccupancy_mean)
+    fig1, responsetime_mean = pyplot.subplots(1,1)
+    emp_rest, = responsetime_mean.plot(ro,mean_response_time[:,0],label='Empirical')
+    responsetime_mean.set_xlabel("ro")
+    responsetime_mean.set_ylabel("mean response time ")
+    responsetime_mean.grid()
+
+
+    #plot mean number of customers in queueing line
+    fig2, bo_mean = pyplot.subplots(1,1)
+    emp_bo, = bo_mean.plot(ro,boccupancy_mean, label='Empirical')
     bo_mean.set_xlabel("ro")
     bo_mean.set_ylabel("mean buffer occupancy")
     bo_mean.grid()
+
+    #plot theoretical curves
+    th_occ = []
+    th_bo = []
+    for i in range(len(ro)):
+        th_occ.append((ro[i]*ro[i])/(1-ro[i]))
+        th_bo.append(ro[i]/((1/ARRIVAL_TIME[0]) * (1 - ro[i])))
+
+    the_bo, = bo_mean.plot(ro,th_occ, label='Theoretical')
+    the_rest, = responsetime_mean.plot(ro,th_bo, label='Theoretical')
+
+    responsetime_mean.legend(handles=[emp_rest,the_rest])
+    bo_mean.legend(handles=[emp_bo,the_bo])
+
+
 
     pyplot.show()
