@@ -1,0 +1,120 @@
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 1.000000 
+Number of requests: 300688 	Number of requests satisfied: 300688 
+Number of requests not satisfied: 0 
+Number of discarded requests: 0
+Average RESPONSE TIME for requests: 3.328907
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 1.473684 
+Number of requests: 299587 	Number of requests satisfied: 299587 
+Number of requests not satisfied: 0 
+Number of discarded requests: 0
+Average RESPONSE TIME for requests: 6.124546
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 1.947368 
+Number of requests: 300795 	Number of requests satisfied: 300789 
+Number of requests not satisfied: 6 
+Number of discarded requests: 0
+Average RESPONSE TIME for requests: 10.966531
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 2.421053 
+Number of requests: 298909 	Number of requests satisfied: 298909 
+Number of requests not satisfied: 0 
+Number of discarded requests: 0
+Average RESPONSE TIME for requests: 20.360035
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 2.894737 
+Number of requests: 300368 	Number of requests satisfied: 300255 
+Number of requests not satisfied: 113 
+Number of discarded requests: 39
+Average RESPONSE TIME for requests: 82.809059
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 3.368421 
+Number of requests: 301962 	Number of requests satisfied: 292443 
+Number of requests not satisfied: 9519 
+Number of discarded requests: 9423
+Average RESPONSE TIME for requests: 14980.555894
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 3.842105 
+Number of requests: 301258 	Number of requests satisfied: 260449 
+Number of requests not satisfied: 40809 
+Number of discarded requests: 40717
+Average RESPONSE TIME for requests: 68733.738687
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 4.315789 
+Number of requests: 298873 	Number of requests satisfied: 232322 
+Number of requests not satisfied: 66551 
+Number of discarded requests: 66450
+Average RESPONSE TIME for requests: 112291.572205
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 4.789474 
+Number of requests: 299132 	Number of requests satisfied: 209074 
+Number of requests not satisfied: 90058 
+Number of discarded requests: 89957
+Average RESPONSE TIME for requests: 150406.098337
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 5.263158 
+Number of requests: 300829 	Number of requests satisfied: 189773 
+Number of requests not satisfied: 111056 
+Number of discarded requests: 110954
+Average RESPONSE TIME for requests: 185174.888027
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 5.736842 
+Number of requests: 300754 	Number of requests satisfied: 174105 
+Number of requests not satisfied: 126649 
+Number of discarded requests: 126549
+Average RESPONSE TIME for requests: 211873.571074
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 6.210526 
+Number of requests: 300023 	Number of requests satisfied: 160947 
+Number of requests not satisfied: 139076 
+Number of discarded requests: 138979
+Average RESPONSE TIME for requests: 231487.067071
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 6.684211 
+Number of requests: 300072 	Number of requests satisfied: 149634 
+Number of requests not satisfied: 150438 
+Number of discarded requests: 150336
+Average RESPONSE TIME for requests: 252752.719946
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 7.157895 
+Number of requests: 298994 	Number of requests satisfied: 140091 
+Number of requests not satisfied: 158903 
+Number of discarded requests: 158803
+Average RESPONSE TIME for requests: 266671.292517
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 7.631579 
+Number of requests: 300721 	Number of requests satisfied: 130836 
+Number of requests not satisfied: 169885 
+Number of discarded requests: 169784
+Average RESPONSE TIME for requests: 282084.947142
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 8.105263 
+Number of requests: 300842 	Number of requests satisfied: 123253 
+Number of requests not satisfied: 177589 
+Number of discarded requests: 177489
+Average RESPONSE TIME for requests: 295493.014861
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 8.578947 
+Number of requests: 299505 	Number of requests satisfied: 116901 
+Number of requests not satisfied: 182604 
+Number of discarded requests: 182502
+Average RESPONSE TIME for requests: 306115.680704
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 9.052632 
+Number of requests: 300137 	Number of requests satisfied: 110554 
+Number of requests not satisfied: 189583 
+Number of discarded requests: 189483
+Average RESPONSE TIME for requests: 314598.482754
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 9.526316 
+Number of requests: 301033 	Number of requests satisfied: 104696 
+Number of requests not satisfied: 196337 
+Number of discarded requests: 196237
+Average RESPONSE TIME for requests: 327965.153496
+
+Arrival rate [lambda]: 10.000000 - Service rate [u]: 10.000000 
+Number of requests: 299889 	Number of requests satisfied: 100440 
+Number of requests not satisfied: 199449 
+Number of discarded requests: 199347
+Average RESPONSE TIME for requests: 336171.347505
+

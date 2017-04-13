@@ -2,6 +2,8 @@ import simpy
 import random
 import numpy
 from matplotlib import pyplot
+from scipy.stats import t
+import math
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # CONSTANTS
@@ -12,18 +14,24 @@ RANDOM_SEED = 7
 # ARRIVAL_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 NUM = 20
 
-SERVICE_TIME = [3.0] # it is the inverse of the service rate (speed)
-ARRIVAL_TIME = [10.0]
+SERVICE_TIME1 = 3.0 #[Front-End] it is the inverse of the service rate (speed)
+SERVICE_TIME2 = 6.0 #[Back-End]
+
+ARRIVAL_TIME = 10.0
 #SERVICE_TIME = numpy.linspace(1.0, 10.0, num=NUM)
 #ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
 A = 1
 B = 5
-QCAPACITY = 100
 
+B1 = 100
+B2 = 50
+
+CONF_LEVEL = 0.9
+NUM_BEANS = 10
 
 NUM_SERVER = 1
-SIM_TIME = 1000000
+SIM_TIME = 100000
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -73,14 +81,12 @@ class WebServer(object):
         else:
             self.discarded += 1
             # print "A request was discarded"
-
-
-                # print ("Request satisfied at ", self.env.now)
-
+            #  print ("Request satisfied at ", self.env.now)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # REQUEST Class
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
 class RequestArrival(object):
     # constructor
     def __init__(self, environ, arrival_rate):
@@ -113,6 +119,7 @@ class RequestArrival(object):
 # MAIN
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
+
 if __name__ == '__main__':
 
     print("Starting the simulation... ")
@@ -121,102 +128,33 @@ if __name__ == '__main__':
     txt.truncate()
 
     mean_response_time = numpy.zeros((NUM,NUM))
+    conf_int_rt = numpy.zeros((2,NUM))
+
     boccupancy_mean = []
+    conf_int_bo = numpy.zeros((2,NUM))
+
     ro = []
 
-    x = 0
-    for servicerate in SERVICE_TIME:
-        y = 0
-        for arrivalrate in ARRIVAL_TIME:
-            random.seed(RANDOM_SEED)
-
-            env = simpy.Environment()
-
-            # arrival
-            request = RequestArrival(env, arrivalrate)
-
-            # web service
-            webserver = WebServer(env, NUM_SERVER, QCAPACITY, servicerate)
-
-            # starts the arrival process
-            env.process(request.arrival_process(webserver))
-
-            # simulate until SIM_TIME
-            env.run(until=SIM_TIME)
-
-            # Statistics
-            txt.write("Arrival rate [lambda]: %f - Service rate [u]: %f \n" % (arrivalrate, servicerate))
-            txt.write("Number of requests: %d \t" % len(request.inter_arrival))
-            txt.write("Number of requests satisfied: %d \n" % len(webserver.service_time))
-            txt.write("Number of requests not satisfied: %d \n" % (len(request.inter_arrival) - len(webserver.service_time)))
-            txt.write("Number of discarded requests: %d\n" %webserver.discarded)
-
-            # truncate inter_arrival list when not all are satisfied
-            del request.inter_arrival[(len(webserver.service_time)):]
-
-            # Calculate Vector of response time
-            response_time = [i[0] - i[1] for i in zip(webserver.service_time, request.inter_arrival)]
-            mean_response_time[x,y] = numpy.mean(response_time)
-
-            boccupancy_mean.append(numpy.mean(webserver.boccupancy))
-            ro.append(servicerate / arrivalrate)
-
-            txt.write("Average RESPONSE TIME for requests: %f" % mean_response_time[x,y])
-            txt.write("\n\n")
-
-            # #plot Response Time
-            # fig,(series, pdf, cdf) = pyplot.subplots(3, 1)
-            #
-            # series.plot(response_time)
-            # series.set_xlabel("Sample")
-            # series.set_ylabel("Response-Time")
-            #
-            # pdf.hist(response_time, bins=100, normed= True)
-            # pdf.set_xlabel("Time")
-            # pdf.set_ylabel("PDF")
-            # #pdf.set_xbound(0, 15)
-            #
-            # cdf.hist(response_time, bins= 100, cumulative= True, normed= True)
-            # cdf.set_xlabel("Time")
-            # cdf.set_ylabel("P(Response Time <= x)")
-            # cdf.set_ybound(0, 1)
-            #
-            # #plot buffer occupancy
-            # fig2,(series, pdf, cdf) = pyplot.subplots(3, 1)
-            #
-            # series.plot(webserver.boccupancy)
-            # series.set_xlabel("Sample")
-            # series.set_ylabel("Buffer-Occupancy")
-            #
-            # pdf.hist(webserver.boccupancy, bins=100, normed= True)
-            # pdf.set_xlabel("Time")
-            # pdf.set_ylabel("PDF")
-            # #pdf.set_xbound(0, 15)
-            #
-            # cdf.hist(webserver.boccupancy, bins= 100, cumulative= True, normed= True)
-            # cdf.set_xlabel("Time")
-            # cdf.set_ylabel("P(Buffer-Occupancy <= x)")
-            # cdf.set_ybound(0, 1)
-            #
-            #pyplot.show()
-            y += 1
-        x += 1
-
-    print("Simulation ended! Plotting some results...")
-
-    #plot mean number of customers in queueing line
-    fig1, responsetime_mean = pyplot.subplots(1,1)
-    emp_rest, = responsetime_mean.plot(ro,mean_response_time[:,0],label='Empirical')
-    responsetime_mean.set_xlabel("ro")
-    responsetime_mean.set_ylabel("mean response time ")
-    responsetime_mean.grid()
-
-    #plot mean number of customers in queueing line
-    fig2, bo_mean = pyplot.subplots(1,1)
-    emp_bo, = bo_mean.plot(ro,boccupancy_mean, label='Empirical')
-    bo_mean.set_xlabel("ro")
-    bo_mean.set_ylabel("mean buffer occupancy")
-    bo_mean.grid()
 
 
-    pyplot.show()
+    random.seed(RANDOM_SEED)
+
+    env = simpy.Environment()
+
+    # arrival
+    front_req = RequestArrival(env, ARRIVAL_TIME)
+    back_req = RequestArrival(env, SERVICE_TIME1)
+
+
+    # web service
+    frontEnd = WebServer(env, NUM_SERVER, B1, SERVICE_TIME1)
+    backEnd = WebServer(env, NUM_SERVER, B2, SERVICE_TIME2)
+
+
+    # starts the arrival process
+    env.process(front_req.arrival_process(frontEnd))
+    env.process(back_req.arrival_process(backEnd))
+
+
+    # simulate until SIM_TIME
+    env.run(until=SIM_TIME)

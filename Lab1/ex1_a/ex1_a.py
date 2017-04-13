@@ -2,6 +2,8 @@ import simpy
 import random
 import numpy
 from matplotlib import pyplot
+from scipy.stats import t
+import math
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # CONSTANTS
@@ -17,6 +19,8 @@ ARRIVAL_TIME = [10.0]
 SERVICE_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 #ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
+CONF_LEVEL = 0.9
+NUM_BEANS = 10
 
 NUM_SERVER = 1
 SIM_TIME = 100000
@@ -107,7 +111,11 @@ if __name__ == '__main__':
     txt.truncate()
 
     mean_response_time = numpy.zeros((NUM,NUM))
+    conf_int_rt = numpy.zeros((2,NUM))
+    # conf_int_rt = []
     boccupancy_mean = []
+    conf_int_bo = numpy.zeros((2,NUM))
+    # conf_int_bo = []
     ro = []
 
     x = 0
@@ -144,9 +152,23 @@ if __name__ == '__main__':
             # Calculate Vector of response time
             response_time = [i[0] - i[1] for i in zip(webserver.service_time, request.inter_arrival)]
             mean_response_time[x,y] = numpy.mean(response_time)
+            conf_int_tmp = t.interval(CONF_LEVEL, NUM_BEANS-1, mean_response_time[x,y], (numpy.std(response_time))/math.sqrt(NUM_BEANS))
+            conf_int_rt[0,x] = conf_int_tmp[0]
+            conf_int_rt[1,x] = conf_int_tmp[1]
+            # conf_int_rt.append(t.interval(CONF_LEVEL, NUM_BEANS-1, mean_response_time[x,y], (numpy.std(response_time))/math.sqrt(NUM_BEANS)))
+            # print mean_response_time[x,y]
+            # print conf_int_rt
 
             boccupancy_mean.append(numpy.mean(webserver.boccupancy))
+            conf_int_tmp = t.interval(CONF_LEVEL, NUM_BEANS-1, boccupancy_mean[-1], (numpy.std(webserver.boccupancy))/math.sqrt(NUM_BEANS))
+            conf_int_bo[0,x] = conf_int_tmp[0]
+            conf_int_bo[1,x] = conf_int_tmp[1]
+            # conf_int_bo.append(t.interval(CONF_LEVEL, NUM_BEANS-1, boccupancy_mean[-1], (numpy.std(webserver.boccupancy))/math.sqrt(NUM_BEANS)))
+            # # print boccupancy_mean[-1]
+            # # print conf_int_bo
+
             ro.append(servicerate/arrivalrate)
+            # print ro
             
             txt.write("Average RESPONSE TIME for requests: %f" %mean_response_time[x,y])
             txt.write("\n\n")
@@ -194,17 +216,21 @@ if __name__ == '__main__':
 
     #plot mean number of customers in queueing line
     fig1, responsetime_mean = pyplot.subplots(1,1)
-    emp_rest, = responsetime_mean.plot(ro,mean_response_time[:,0],label='Empirical')
+    ci_rest = responsetime_mean.errorbar(ro, mean_response_time[:,0], xerr=0, yerr=conf_int_rt[:,:], fmt='.', color='c', label="Conf Int")
+    # responsetime_mean.plot(ro,conf_int_rt)
+    emp_rest, = responsetime_mean.plot(ro, mean_response_time[:,0], label='Empirical')
     responsetime_mean.set_xlabel("ro")
-    responsetime_mean.set_ylabel("mean response time ")
+    responsetime_mean.set_ylabel("Mean Response Time")
     responsetime_mean.grid()
 
 
     #plot mean number of customers in queueing line
     fig2, bo_mean = pyplot.subplots(1,1)
-    emp_bo, = bo_mean.plot(ro,boccupancy_mean, label='Empirical')
+    ci_bo = bo_mean.errorbar(ro, boccupancy_mean, xerr=0, yerr=conf_int_bo[:,:], fmt='.', color='c', label="Conf Int")
+    # bo_mean.plot(ro,conf_int_bo)
+    emp_bo, = bo_mean.plot(ro, boccupancy_mean, label='Empirical')
     bo_mean.set_xlabel("ro")
-    bo_mean.set_ylabel("mean buffer occupancy")
+    bo_mean.set_ylabel("Mean Buffer Occupancy")
     bo_mean.grid()
 
     #plot theoretical curves
@@ -217,9 +243,7 @@ if __name__ == '__main__':
     the_bo, = bo_mean.plot(ro,th_occ, label='Theoretical')
     the_rest, = responsetime_mean.plot(ro,th_bo, label='Theoretical')
 
-    responsetime_mean.legend(handles=[emp_rest,the_rest])
-    bo_mean.legend(handles=[emp_bo,the_bo])
-
-
+    responsetime_mean.legend(handles=[emp_rest,the_rest,ci_rest])
+    bo_mean.legend(handles=[emp_bo,the_bo,ci_bo])
 
     pyplot.show()

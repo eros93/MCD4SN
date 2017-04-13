@@ -1,6 +1,0 @@
-Arrival rate [lambda]: 10.000000 - Service rate [u]: 3.000000 
-Number of requests: 299594 	Number of requests satisfied: 299384 
-Number of requests not satisfied: 210 
-Number of discarded requests: 196
-Average RESPONSE TIME for requests: 392.264463
-
