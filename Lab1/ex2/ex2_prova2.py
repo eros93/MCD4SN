@@ -15,7 +15,7 @@ RANDOM_SEED = 7
 NUM = 20
 
 SERVICE_TIME1 = 3.0 #[Front-End] it is the inverse of the service rate (speed)
-SERVICE_TIME2 = 200.0 #[Back-End]
+SERVICE_TIME2 = 20.0 #[Back-End]
 
 ARRIVAL_TIME = 10.0
 #SERVICE_TIME = numpy.linspace(1.0, 10.0, num=NUM)
@@ -27,10 +27,10 @@ B = 5
 
 #buffers dimension
 B1 = 100
-B2 = 1
+B2 = 100
 
 #probability of reqs not satisfied by Front End
-P = 0.2
+P = 1.1
 
 CONF_LEVEL = 0.9
 NUM_BEANS = 10
@@ -122,14 +122,14 @@ class WebServer(object):
 
                     else:
                         self.discarded2 += 1
-                        print "A BackEnd request was discarded"
+                        #print "A BackEnd request was discarded"
                 else:
                     self.service_time1.append(self.env.now)
                     self.instant_qsize1 -= 1
                     self.qsize1.append(self.instant_qsize1)
         else:
             self.discarded1 += 1
-            print "A FrontEnd request was discarded"
+            #print "A FrontEnd request was discarded"
             #  print ("Request satisfied at ", self.env.now)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#

@@ -38,10 +38,37 @@ NUM_BEANS = 10
 NUM_SERVER = 1
 SIM_TIME = 10000
 
+reqs = []  # list of Request objects
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+# singleREQUEST Class
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+class Request(object):
+
+    r_index = 0  # request ID (increasing)
+
+    def __init__(self):
+        self.id = Request.r_index
+        Request.r_index += 1
+        self.arrtime = 0
+        self.sertime = 0
+
+    def setArrivalTime(self, arrivalTime):
+        self.arrtime = arrivalTime
+
+    def setServiceTime(self, serviceTime):
+        self.sertime = serviceTime
+
+    def evaluateResponseTime(self):
+        return (self.sertime - self.arrtime)
+
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # WEB SERVER Class
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
 class WebServer(object):
     def __init__(self, environ, numserver, qcapacity, service_rate):
         # define the number of servers in parallel
@@ -85,7 +112,7 @@ class WebServer(object):
                 self.qsize.append(self.instant_qsize)
         else:
             self.discarded += 1
-            print "A request was discarded"
+            #print "A request was discarded"
             #  print ("Request satisfied at ", self.env.now)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -102,7 +129,7 @@ class RequestArrival(object):
         self.env = environ
 
     # execute the process
-    def arrival_process(self, web_service1, web_service2):
+    def arrival_process(self, web_server1, web_server2):
         while True:
             # sample the time to next arrival
             inter_arrival = random.expovariate(lambd=1.0 / self.arrival_rate)
@@ -114,21 +141,24 @@ class RequestArrival(object):
             # a request has arrived - request the service to the server
             # print ("batch of dimension %d Request has arrived at %r" %(batches_dim, self.env.now))
             for i in range(batches_dim):
-                self.inter_arrival.append(self.env.now)  # sample time of arrival
-                self.env.process(web_service1.service_process)
+                req = Request()
+                reqs.append(req)
+                reqs[-1].setArrivalTime(self.env.now)
+                #self.inter_arrival.append(self.env.now)  # sample time of arrival
+                self.env.process(web_server1.service_process)
                 #print "Front_End request number : %d is finished " %(i+1)
 
                 coin = numpy.random.random()
                 if (coin < P):
                     #print coin
-                    self.env.process(web_service2.service_process)
+                    self.env.process(web_server2.service_process)
+
                     #web_service1.service_time[-1] = web_service2.service_time[-1] #insert the correct service time for that req
                     #print "Back_End request number : %d is finished " % (i+1)
 
 
 
 
-# ----------------------------------------------------------------------------------------------#
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # MAIN
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -148,7 +178,6 @@ if __name__ == '__main__':
     conf_int_bo = numpy.zeros((2,NUM))
 
     ro = []
-
 
 
     random.seed(RANDOM_SEED)
