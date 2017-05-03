@@ -14,10 +14,10 @@ RANDOM_SEED = 7
 # ARRIVAL_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
 NUM = 20
 
-SERVICE_TIME1 = 3.0 #[Front-End] it is the inverse of the service rate (speed)
-SERVICE_TIME2 = 20.0 #[Back-End]
+SERVICE_TIME1 = 4.0 #[Front-End] it is the inverse of the service rate (speed)
+SERVICE_TIME2 = 2.0 #[Back-End]
 
-ARRIVAL_TIME = 10.0
+ARRIVAL_TIME = 15.0
 #SERVICE_TIME = numpy.linspace(1.0, 10.0, num=NUM)
 #ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
@@ -26,17 +26,17 @@ A = 1
 B = 5
 
 #buffers dimension
-B1 = 100
-B2 = 100
+B1 = 1000
+B2 = 1000
 
 #probability of reqs not satisfied by Front End
-P = 1.1
+P = 0.5
 
 CONF_LEVEL = 0.9
 NUM_BEANS = 10
 
 NUM_SERVER = 1
-SIM_TIME = 1000
+SIM_TIME = 10000
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -50,10 +50,8 @@ class WebServer(object):
 
 
         # holds samples of request-processing time
-        self.service_time1 = []
+        self.service_time = []
         self.service_rate1 = service_rate1
-
-        self.service_time2 = []
         self.service_rate2 = service_rate2
 
         self.env = environ
@@ -64,11 +62,8 @@ class WebServer(object):
         self.instant_boccupancy2 = 0
         self.boccupancy2 = []
 
-        self.instant_qsize1 = 0
-        self.qsize1 = []
-
-        self.instant_qsize2 = 0
-        self.qsize2 = []
+        self.instant_qsize = 0
+        self.qsize = []
 
         self.qcapacity1 = qcapacity1
         self.discarded1 = 0
@@ -79,58 +74,58 @@ class WebServer(object):
 
     @property
     def service_process(self):
-        self.instant_qsize1 += 1
+        self.instant_qsize += 1
 
-        if (self.instant_boccupancy1 <= self.qcapacity1 ):
+        if (self.instant_boccupancy1 <= self.qcapacity1):
             # make a server request
             with self.frontEnd.request() as frontRequest:
                 self.instant_boccupancy1 += 1
-                # print ("Request has required the resource at ", self.env.now)
+                #  print ("Request has required the resource 1 at ", self.env.now)
                 yield frontRequest
                 self.instant_boccupancy1 -= 1
-                # print ("Request has received the resource at ", self.env.now)
+                # print ("Request has *** received the resource 1 at ", self.env.now)
 
                 # once the servers is free, wait until service is finished
-                service_time1 = random.expovariate(lambd=1.0 / self.service_rate1)
+                service_time1 = random.expovariate(lambd=1.0/self.service_rate1)
                 self.boccupancy1.append(self.instant_boccupancy1)
                 # yield an event to the simulator
                 yield self.env.timeout(service_time1)
 
-
                 coin = numpy.random.random()
-                if (coin < P):
-
-                    self.instant_qsize2 += 1
-
-                    if (self.instant_boccupancy2 <= self.qcapacity2):
-                        # make a server request
-                        with self.backEnd.request() as backRequest:
-                            self.instant_boccupancy2 += 1
-                            # print ("Request has required the resource at ", self.env.now)
-                            yield backRequest
-                            self.instant_boccupancy2-= 1
-                            # print ("Request has received the resource at ", self.env.now)
-
-                            # once the servers is free, wait until service is finished
-                            service_time2 = random.expovariate(lambd=1.0 / self.service_rate2)
-                            self.boccupancy2.append(self.instant_boccupancy2)
-                            # yield an event to the simulator
-                            yield self.env.timeout(service_time2)
-                            self.service_time2.append(self.env.now)
-                            self.instant_qsize2 -= 1
-                            self.qsize2.append(self.instant_qsize2)
-
-                    else:
-                        self.discarded2 += 1
-                        #print "A BackEnd request was discarded"
-                else:
-                    self.service_time1.append(self.env.now)
-                    self.instant_qsize1 -= 1
-                    self.qsize1.append(self.instant_qsize1)
         else:
             self.discarded1 += 1
+            return
             #print "A FrontEnd request was discarded"
             #  print ("Request satisfied at ", self.env.now)
+
+        if (coin < P):
+
+            if (self.instant_boccupancy2 <= self.qcapacity2):
+                # make a server request
+                with self.backEnd.request() as backRequest:
+                    self.instant_boccupancy2 += 1
+                    #print ("Request has required the resource 2 at ", self.env.now)
+                    yield backRequest
+                    self.instant_boccupancy2 -= 1
+                    #print ("Request has *** received the resource 2 at ", self.env.now)
+
+                    # once the servers is free, wait until service is finished
+                    service_time2 = random.expovariate(lambd=1.0 / self.service_rate2)
+                    self.boccupancy2.append(self.instant_boccupancy2)
+                    # yield an event to the simulator
+                    #print service_time2
+                    yield self.env.timeout(service_time2)
+                    self.service_time.append(self.env.now)
+                    self.instant_qsize -= 1
+                    self.qsize.append(self.instant_qsize)
+            else:
+                self.discarded2 += 1
+                #print "A BackEnd request was discarded"
+                return
+        else:
+            self.service_time.append(self.env.now)
+            self.instant_qsize -= 1
+            self.qsize.append(self.instant_qsize)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # REQUEST Class
@@ -213,30 +208,35 @@ if __name__ == '__main__':
     # simulate until SIM_TIME
     env.run(until=SIM_TIME)
 
-    # # truncate inter_arrival list when not all are satisfied
-    # del arrival.inter_arrival[(len(frontEnd.service_time)):]
-    #
-    # # Calculate Vector of response time
-    # response_time = [i[0] - i[1] for i in zip(frontEnd.service_time, arrival.inter_arrival)]
-    #
-    #
-    # #plot Response Time
-    # fig,(series, pdf, cdf) = pyplot.subplots(3, 1)
-    #
-    # series.plot(response_time)
-    # series.set_xlabel("Sample")
-    # series.set_ylabel("Overall Response-Time")
-    #
-    # pdf.hist(response_time, bins=100, normed= True)
-    # pdf.set_xlabel("Time")
-    # pdf.set_ylabel("PDF")
-    # #pdf.set_xbound(0, 15)
-    #
-    # cdf.hist(response_time, bins= 100, cumulative= True, normed= True)
-    # cdf.set_xlabel("Time")
-    # cdf.set_ylabel("P(Response Time <= x)")
-    # cdf.set_ybound(0, 1)
-    #
+    # truncate inter_arrival list when not all are satisfied
+    del arrival.inter_arrival[(len(webserver.service_time)):]
+
+    # Calculate Vector of response time
+    response_time = [i[0] - i[1] for i in zip(webserver.service_time, arrival.inter_arrival)]
+
+    print numpy.mean(response_time)
+    print "front end discarded: %d " %webserver.discarded1
+    print "Back end discarded: %d " % webserver.discarded2
+
+
+
+    #plot Response Time
+    fig,(series, pdf, cdf) = pyplot.subplots(3, 1)
+
+    series.plot(response_time)
+    series.set_xlabel("Sample")
+    series.set_ylabel("Overall Response-Time")
+
+    pdf.hist(response_time, bins=100, normed= True)
+    pdf.set_xlabel("Time")
+    pdf.set_ylabel("PDF")
+    #pdf.set_xbound(0, 15)
+
+    cdf.hist(response_time, bins= 100, cumulative= True, normed= True)
+    cdf.set_xlabel("Time")
+    cdf.set_ylabel("P(Response Time <= x)")
+    cdf.set_ybound(0, 1)
+
     #plot buffer occupancy FrontEnd
     fig2,(series, pdf, cdf) = pyplot.subplots(3, 1)
 
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     cdf.set_ylabel("P(Buffer-Occupancy <= x)")
     cdf.set_ybound(0, 1)
 
-    #plot buffer occupancy BackEnd
+   # plot buffer occupancy BackEnd
     fig3,(series, pdf, cdf) = pyplot.subplots(3, 1)
 
     series.plot(webserver.boccupancy2)
@@ -272,4 +272,3 @@ if __name__ == '__main__':
     cdf.set_ybound(0, 1)
 
     pyplot.show()
-
