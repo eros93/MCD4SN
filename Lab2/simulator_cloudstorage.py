@@ -42,10 +42,14 @@ class SharedFolder(object):
 # class representing devices
 #******************************************************************************
 class Device():
-    # cosftructor
+    # costructor
     def __init__(self, id):
         self.id = id
         self.my_shared_folders = []
+
+        self.download_index = []
+        
+        self.download_queue = []    
 
     # fancy printing as string
     def __str__(self):
@@ -55,6 +59,31 @@ class Device():
     # add a shared folder to this device
     def add_shared_folder(self, sf):
         self.my_shared_folders.append(sf)
+        self.download_index.append(0)
+
+    # download
+    def download(self):
+        for i in range(self.my_shared_folders):
+            folder_id = self.my_shared_folders[i]
+
+
+
+    # upload
+
+
+    def session(self):
+
+        #estrai session duration
+
+        # OSS. Con o senza memoria quando session si chiude e non ho concluso l'up
+        
+        #1) UP/DOW contemporaneamente
+        # scelgo random folder
+        # download subito, upload anche
+        # estrarre inter-up-time
+
+        #2) Non è possibile
+        # download subito, upload dopo inter-up-time
 
 
 #******************************************************************************
@@ -144,7 +173,7 @@ def generate_network(num_dv, devices, shared_folders):
 if __name__ == '__main__':
 
     # number of devices in the simulation
-    NUM_DEV = 10
+    NUM_DEV = 3
 
     # collection of devices
     devices = {}
@@ -158,5 +187,6 @@ if __name__ == '__main__':
 
     # DEBUG: dumping the network
     for dev_id in devices:
-      print str(devices[dev_id])
+        print str(devices[dev_id])
 
+        #env.process(devices[dev_id].QUALCOSA())
