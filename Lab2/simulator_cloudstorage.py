@@ -7,6 +7,13 @@ from numpy import random
 import simpy
 import sys
 import os
+
+
+f = open("throughput.txt","r")
+data = f.readlines()
+f.close()
+
+
 #******************************************************************************
 # class representing the files
 #******************************************************************************
@@ -20,7 +27,7 @@ class File(object):
 # class representing the shared folders
 #******************************************************************************
 class SharedFolder(object):
-    # cosftructor
+    # costructor
     def __init__(self, id):
         self.id = id
         self.my_devices = []
@@ -61,19 +68,36 @@ class Device():
         self.my_shared_folders.append(sf)
         self.download_index.append(0)
 
-    # download
-    def download(self):
-        for i in range(self.my_shared_folders):
-            folder_id = self.my_shared_folders[i]
-
-
+    # # download
+    # def download(self):
+    #     for i in range(self.my_shared_folders):
+    #         folder_id = self.my_shared_folders[i]
 
     # upload
 
 
     def session(self):
 
-        #estrai session duration
+        sessionTime = random.lognormal(8.492,1.545)
+        #print sessionTime
+        interUploadTime = random.lognormal(3.748,2.286)
+        intMax = len(self.my_shared_folders)
+        index = random.randint(0,intMax)
+        # random uploading folder
+        uploadingFolder = self.my_shared_folders[index]
+
+        intMaxLine = len(data)
+        indexLine = random.randint(1, intMaxLine)
+        line = data[indexLine]
+        # fileSize [Byte]
+        fileSize, throughput = line.split()
+        uploadTime = (int(fileSize) * 8) / (float(throughput))
+
+        #take the input file
+
+
+
+
 
         # OSS. Con o senza memoria quando session si chiude e non ho concluso l'up
         
@@ -82,7 +106,7 @@ class Device():
         # download subito, upload anche
         # estrarre inter-up-time
 
-        #2) Non è possibile
+        #2) Non  possibile
         # download subito, upload dopo inter-up-time
 
 
@@ -173,7 +197,7 @@ def generate_network(num_dv, devices, shared_folders):
 if __name__ == '__main__':
 
     # number of devices in the simulation
-    NUM_DEV = 3
+    NUM_DEV = 10
 
     # collection of devices
     devices = {}
@@ -185,8 +209,11 @@ if __name__ == '__main__':
     generate_network(NUM_DEV, devices, shared_folders)
 
 
+
     # DEBUG: dumping the network
     for dev_id in devices:
-        print str(devices[dev_id])
+      print str(devices[dev_id])
+
+
 
         #env.process(devices[dev_id].QUALCOSA())
