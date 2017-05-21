@@ -4,6 +4,7 @@ import numpy
 from matplotlib import pyplot
 from scipy.stats import t
 import math
+import datetime
 import json
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -304,7 +305,7 @@ if __name__ == '__main__':
         # print conf_int_bo2[1,x]
 
 
-        # #DEBUG
+        # # DEBUG
         # print "\n\n- Number of requests: %d" %len(arrival.inter_arrival)
         # print "- Number of served request: %d" %len(webserver.service_time)
         
@@ -367,14 +368,16 @@ if __name__ == '__main__':
         # pyplot.show()
         x += 1
 
-    print("\nSimulation ended! Saving and Plotting some results...\n")
+    print("\nSimulation ended! Saving the results...\n")
 
 
-    # SAVE DATA [CHANGE NAME depending on which is let varying]
-    txt=open("simulation_result.json","w+")
+    # SAVE DATA [NAME contains the DATE]
+    filename = "results/simulation_result_"+datetime.datetime.now().strftime("%y%m%d_%H%M")+".json"
+    txt = open(filename,"w+")
     txt.truncate()
 
     output = {}
+    output["NUM"] = NUM
     output["RANDOM_SEED"] = RANDOM_SEED
     output["SERVICE_TIME1"] = SERVICE_TIME1
     output["SERVICE_TIME2"] = SERVICE_TIME2
@@ -384,13 +387,16 @@ if __name__ == '__main__':
     output["minbatch"] = A
     output["maxbatch"] = B
     output["CONF_LEVEL"] = CONF_LEVEL
+    output["SIM_TIME"] = SIM_TIME
+    output["DIM_BATCHES"] = DIM_BATCHES
+    output["NUM_BATCHES"] = NUM_BATCHES
     output["mean_response_time"] = mean_response_time
     output["conf_int_rt"] = [float(z) for z in conf_int_rt[0,:]]
     output["boccupancy1_mean"] = boccupancy1_mean
     output["conf_int_bo1"] = [float(z) for z in conf_int_bo1[0,:]]
     output["boccupancy2_mean"] = boccupancy2_mean
     output["conf_int_bo2"] = [float(z) for z in conf_int_bo2[0,:]]
-
+    
     txt.write(json.dumps(output))
     txt.close()
 
