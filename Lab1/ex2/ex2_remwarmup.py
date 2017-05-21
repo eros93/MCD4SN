@@ -12,21 +12,17 @@ import json
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 RANDOM_SEED = 7
 
-# SERVICE_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-# ARRIVAL_RATE = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+# FIXED
+NUM = 1
+SERVICE_TIME1 = 2.0 #[Front-End] it is the inverse of the service rate (speed)
+SERVICE_TIME2 = 4.0 #[Back-End]
+ARRIVAL_TIME = [10.0]
 
-
-# # FIXED
-# NUM = 1
-# SERVICE_TIME1 = 2.0 #[Front-End] it is the inverse of the service rate (speed)
-# SERVICE_TIME2 = 4.0 #[Back-End]
-# ARRIVAL_TIME = 4.0
-
-# VARYING arrival_time
-NUM = 25
-SERVICE_TIME1 = 2.0
-SERVICE_TIME2 = 5.0
-ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
+# # VARYING arrival_time
+# NUM = 25
+# SERVICE_TIME1 = 2.0
+# SERVICE_TIME2 = 5.0
+# ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
 # Batch dimension
 A = 1   # MAX
@@ -40,10 +36,10 @@ B2 = 10000   # Back-end
 P = 0.25
 
 CONF_LEVEL = 0.9
-DIM_BATCHES = 50000
+DIM_BATCHES = 5000
 
 NUM_SERVER = 1
-SIM_TIME = 1500000
+SIM_TIME = 150000
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -221,6 +217,7 @@ if __name__ == '__main__':
         # Batches analysis
 
         #Reset the data structures
+        flagremoved = 0
         pointer_rt = 0
         pointer_bo1 = 0
         pointer_bo2 = 0
@@ -250,6 +247,19 @@ if __name__ == '__main__':
             # Calculate Vector of Response Times for the batch
             response_time = [ i[0] - i[1] for i in zip(service_time_batch, inter_arrival_batch) ]
 
+
+            # WARM-UP removal [ALPHA test] [Slides 33-36 OutputAnalysis]
+            if(flagremoved <= 25):
+                Rx = []
+                batch_mean = numpy.mean(response_time)            
+
+                for k in range (0,DIM_BATCHES):
+                    xk = numpy.mean(response_time[k+1:])
+                    Rx.append((xk - batch_mean)/batch_mean)
+
+                flagremoved += 1
+
+
             # Mean values estimation
             # Response Time
             batch_mean = numpy.mean(response_time)
@@ -263,6 +273,15 @@ if __name__ == '__main__':
             batch_mean = numpy.mean(boccupancy2_batch)
             boccupancy2_mean_batches.append(batch_mean)
 
+        # PLOT the WARMUP stuffs
+        fig1,warmup_removal = pyplot.subplots(1,1)
+        emp_rest, = warmup_removal.plot(range(1,DIM_BATCHES+1), Rx, label='Rk - WarmUp state')
+        warmup_removal.set_xlabel("# of Observations")
+        warmup_removal.set_ylabel("Rk")
+        warmup_removal.grid()
+        warmup_removal.legend(handles=[emp_rest])
+        fig1.suptitle('Warm Up - Analysis')
+        pyplot.show()
 
         # print "\nmean_response_time_batches"
         # print mean_response_time_batches
