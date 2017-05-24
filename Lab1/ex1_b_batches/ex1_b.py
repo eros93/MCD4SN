@@ -21,13 +21,13 @@ SERVICE_TIME = numpy.linspace(1.0, 10.0, num=NUM)
 
 A = 1
 B = 5
-QCAPACITY = 50000
+QCAPACITY = 1000
 
 CONF_LEVEL = 0.9
-DIM_BATCHES = 50000
+DIM_BATCHES = 5000
 
 NUM_SERVER = 1
-SIM_TIME = 1500000
+SIM_TIME = 150000
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -53,6 +53,7 @@ class WebServer(object):
         self.qcapacity = qcapacity
         self.discarded = 0
 
+
     @property
     def service_process(self):
         self.instant_qsize += 1
@@ -77,7 +78,7 @@ class WebServer(object):
         else:
             self.discarded += 1
             # print "A request was discarded"
-            # print ("Request satisfied at ", self.env.now)
+            # print ("Request rejected at ", self.env.now)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # REQUEST Class
@@ -126,6 +127,9 @@ if __name__ == '__main__':
     boccupancy_mean = []
     conf_int_bo = numpy.zeros((2,NUM))
 
+    dropped_mean = []
+    conf_int_dropped = numpy.zeros((2,NUM))
+
     ro = []
 
 
@@ -153,6 +157,7 @@ if __name__ == '__main__':
             pointer_bo = 0
             mean_response_time_batches = []
             boccupancy_mean_batches = []
+            dropped = []
 
             for index in range(1,(SIM_TIME/DIM_BATCHES)+1):
                 # simulate until index*DIM_BATCHES
@@ -182,12 +187,18 @@ if __name__ == '__main__':
                 batch_mean = numpy.mean(boccupancy_batch)
                 boccupancy_mean_batches.append(batch_mean)
 
+                # Packet discarded evolution --> Take only the maximum for each batch or the mean value?
+                #dropped.append(webserver.discarded)
+                dropped.append(numpy.mean(webserver.discarded))
+
             # print "\nmean_response_time_batches"
             # print mean_response_time_batches
             # print numpy.var(mean_response_time_batches)
             # print "\nboccupancy_mean_batches"
             # print boccupancy_mean_batches
             # print numpy.var(boccupancy_mean_batches)
+            # print "\ndropped"
+            # print dropped
 
             NUM_BATCHES = int(round(SIM_TIME/DIM_BATCHES))
 
@@ -211,6 +222,11 @@ if __name__ == '__main__':
             # print conf_int_bo[0,x]
             # print conf_int_bo[1,x]
             
+            dropped_mean.append(numpy.mean(dropped))
+            conf_int_tmp = t.interval(CONF_LEVEL, NUM_BATCHES-1, dropped_mean[-1], math.sqrt(numpy.var(dropped_mean)/NUM_BATCHES))
+            conf_int_dropped[0,x] = abs(dropped_mean[-1] - conf_int_tmp[0])
+            conf_int_dropped[1,x] = abs(dropped_mean[-1] - conf_int_tmp[1])
+
             ro.append(servicerate/arrivalrate)
             # print ro
 
@@ -270,8 +286,16 @@ if __name__ == '__main__':
     bo_mean.set_ylabel("Mean Buffer Occupancy")
     bo_mean.grid()
 
+    #plot evolution of dropped packets
+    fig3, drp_mean = pyplot.subplots(1,1)
+    ci_drp = drp_mean.errorbar(ro, dropped_mean, xerr=0, yerr=conf_int_dropped[:,:], fmt='.', color='c', label="Conf Int")
+    emp_drp, = drp_mean.plot(ro, dropped_mean, label='Empirical')
+    drp_mean.set_xlabel("ro")
+    drp_mean.set_ylabel("Packet dropped")
+    drp_mean.grid()
+
     responsetime_mean.legend(handles=[emp_rest,ci_rest])
     bo_mean.legend(handles=[emp_bo,ci_bo])
-
+    drp_mean.legend(handles=[emp_drp,ci_drp])
 
     pyplot.show()

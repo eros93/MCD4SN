@@ -398,7 +398,7 @@ if __name__ == '__main__':
     output["boccupancy2_mean"] = boccupancy2_mean
     output["conf_int_bo2"] = [float(z) for z in conf_int_bo2[0,:]]
     
-    txt.write(json.dumps(output))
+    txt.write(json.dumps(output), sort_keys=True, indent=4, separators=(',', ': '))
     txt.close()
 
 
