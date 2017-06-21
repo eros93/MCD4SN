@@ -6,23 +6,24 @@ from scipy.stats import t
 import math
 import datetime
 import json
+import time # only to measuring how long the script runs
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 # CONSTANTS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 RANDOM_SEED = 7
 
-# FIXED
-NUM = 1
-SERVICE_TIME1 = 2.0 #[Front-End] it is the inverse of the service rate (speed)
-SERVICE_TIME2 = 4.0 #[Back-End]
-ARRIVAL_TIME = [10.0]
+# # FIXED
+# NUM = 1
+# SERVICE_TIME1 = 2.0 #[Front-End] it is the inverse of the service rate (speed)
+# SERVICE_TIME2 = 4.0 #[Back-End]
+# ARRIVAL_TIME = [10.0]
 
-# # VARYING arrival_time
-# NUM = 25
-# SERVICE_TIME1 = 2.0
-# SERVICE_TIME2 = 5.0
-# ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
+# VARYING arrival_time
+NUM = 50
+SERVICE_TIME1 = 2.0
+SERVICE_TIME2 = 5.0
+ARRIVAL_TIME = numpy.linspace(1.0, 10.0, num = NUM)
 
 # Batch dimension
 A = 1   # MAX
@@ -33,13 +34,13 @@ B1 = 10000   # Front-end
 B2 = 10000   # Back-end
 
 # Probability of reqs not satisfied by Front End
-P = 0.25
+P = 0.75
 
 CONF_LEVEL = 0.9
-DIM_BATCHES = 5000
+DIM_BATCHES = 50000
 
 NUM_SERVER = 1
-SIM_TIME = 150000
+SIM_TIME = 1000000
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
@@ -182,6 +183,8 @@ class RequestArrival(object):
 
 if __name__ == '__main__':
 
+    start_time = time.time()
+
     random.seed(RANDOM_SEED)
 
     print("Starting the simulation... ")
@@ -218,6 +221,7 @@ if __name__ == '__main__':
 
         #Reset the data structures
         flagremoved = 0
+        Rx = []
         pointer_rt = 0
         pointer_bo1 = 0
         pointer_bo2 = 0
@@ -244,44 +248,48 @@ if __name__ == '__main__':
             pointer_bo1 = len(webserver.boccupancy1)
             pointer_bo2 = len(webserver.boccupancy2)
 
-            # Calculate Vector of Response Times for the batch
-            response_time = [ i[0] - i[1] for i in zip(service_time_batch, inter_arrival_batch) ]
+            # Remove first batch by avoiding the related calculations [WARM UP REMOVAL!]
+            if(index > 1):
+                # Calculate Vector of Response Times for the batch
+                response_time = [ i[0] - i[1] for i in zip(service_time_batch, inter_arrival_batch) ]
 
 
-            # WARM-UP removal [ALPHA test] [Slides 33-36 OutputAnalysis]
-            if(flagremoved <= 25):
-                Rx = []
-                batch_mean = numpy.mean(response_time)            
+                # # WARM-UP removal [ALPHA test] [Slides 33-36 OutputAnalysis]
+                # if(flagremoved <= 25):
+                    
+                #     batch_mean = numpy.mean(response_time)            
 
-                for k in range (0,DIM_BATCHES):
-                    xk = numpy.mean(response_time[k+1:])
-                    Rx.append((xk - batch_mean)/batch_mean)
+                #     for k in range (0,DIM_BATCHES):
+                #         xk = numpy.mean(response_time[k+1:])
+                #         Rx.append(abs((xk - batch_mean)/batch_mean))
 
-                flagremoved += 1
+                #     flagremoved += 1
+
+                # # PLOT the WARMUP stuffs
+                # fig1,warmup_removal = pyplot.subplots(1,1)
+                # emp_rest, = warmup_removal.plot(Rx, label='Rk - WarmUp state')
+                # # emp_rest, = warmup_removal.plot(range(1,DIM_BATCHES+1), Rx, label='Rk - WarmUp state')
+                # warmup_removal.set_xlabel("# of Observations")
+                # warmup_removal.set_ylabel("Rk")
+                # warmup_removal.grid()
+                # warmup_removal.legend(handles=[emp_rest])
+                # fig1.suptitle('Warm Up - Analysis')
+                # pyplot.show()
 
 
-            # Mean values estimation
-            # Response Time
-            batch_mean = numpy.mean(response_time)
-            mean_response_time_batches.append(batch_mean)
-            
-            # Buffer Occupancy
-            # 1 [Front-End]
-            batch_mean = numpy.mean(boccupancy1_batch)
-            boccupancy1_mean_batches.append(batch_mean)
-            # 2 [Back-End]
-            batch_mean = numpy.mean(boccupancy2_batch)
-            boccupancy2_mean_batches.append(batch_mean)
 
-        # PLOT the WARMUP stuffs
-        fig1,warmup_removal = pyplot.subplots(1,1)
-        emp_rest, = warmup_removal.plot(range(1,DIM_BATCHES+1), Rx, label='Rk - WarmUp state')
-        warmup_removal.set_xlabel("# of Observations")
-        warmup_removal.set_ylabel("Rk")
-        warmup_removal.grid()
-        warmup_removal.legend(handles=[emp_rest])
-        fig1.suptitle('Warm Up - Analysis')
-        pyplot.show()
+                # Mean values estimation
+                # Response Time
+                batch_mean = numpy.mean(response_time)
+                mean_response_time_batches.append(batch_mean)
+                
+                # Buffer Occupancy
+                # 1 [Front-End]
+                batch_mean = numpy.mean(boccupancy1_batch)
+                boccupancy1_mean_batches.append(batch_mean)
+                # 2 [Back-End]
+                batch_mean = numpy.mean(boccupancy2_batch)
+                boccupancy2_mean_batches.append(batch_mean)
 
         # print "\nmean_response_time_batches"
         # print mean_response_time_batches
@@ -397,6 +405,8 @@ if __name__ == '__main__':
     txt.truncate()
 
     output = {}
+    output["descr"] = "ex2_remwarmup"
+    output["duration"] = time.time()-start_time
     output["NUM"] = NUM
     output["RANDOM_SEED"] = RANDOM_SEED
     output["SERVICE_TIME1"] = SERVICE_TIME1
@@ -407,6 +417,7 @@ if __name__ == '__main__':
     output["minbatch"] = A
     output["maxbatch"] = B
     output["CONF_LEVEL"] = CONF_LEVEL
+    output["P"] = P
     output["SIM_TIME"] = SIM_TIME
     output["DIM_BATCHES"] = DIM_BATCHES
     output["NUM_BATCHES"] = NUM_BATCHES
@@ -418,8 +429,10 @@ if __name__ == '__main__':
     output["conf_int_bo2"] = [float(z) for z in conf_int_bo2[0,:]]
     
     txt.write(json.dumps(output))
+    #txt.write(json.dumps(output), sort_keys=True, indent=4, separators=(',', ': '))
     txt.close()
 
+    print 'Execution time:', output["duration"], 'seconds.'
 
     # # VARYING ARRIVAL TIME
     # #plot mean response time

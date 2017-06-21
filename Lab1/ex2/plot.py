@@ -3,7 +3,7 @@ import numpy
 from matplotlib import pyplot
 
 # Data Source File
-FILENAME = "results/simulation_result_170521_1108.json"
+FILENAME = "results/simulation_result_170618_1706.json"
 
 
 if __name__ == '__main__':
@@ -14,6 +14,8 @@ if __name__ == '__main__':
 	inputfile.close()
 
 	NUM = inputdata["NUM"]
+	description = inputdata["descr"]
+	duration = inputdata["duration"]
 	RANDOM_SEED = inputdata["RANDOM_SEED"]
 	SERVICE_TIME1 = inputdata["SERVICE_TIME1"]
 	SERVICE_TIME2 = inputdata["SERVICE_TIME2"]
@@ -23,6 +25,7 @@ if __name__ == '__main__':
 	A = inputdata["minbatch"]
 	B = inputdata["maxbatch"]
 	CONF_LEVEL = inputdata["CONF_LEVEL"]
+	P = inputdata["P"]
 	SIM_TIME = inputdata["SIM_TIME"]
 	DIM_BATCHES = inputdata["DIM_BATCHES"]
 	NUM_BATCHES = inputdata["NUM_BATCHES"]
@@ -37,7 +40,9 @@ if __name__ == '__main__':
 
 	print("""
 	File in use: %r.
+	Description: %r | Duration %r s.
 	Main DATA:
+	\t- 1-HIT probability (P) = %r
 	\t- Simulation Time = %r
 	\t- # of Batches (SIMULATION): %r (dimension = %r)
 	\t- Arrival time = %r
@@ -46,7 +51,7 @@ if __name__ == '__main__':
 	\t- Packet batch: min=%r / max=%r (uniform distr.)
 	\t- Buffer Front End = %r 
 	\t- Buffer Back End = %r
-	""" %(FILENAME, SIM_TIME, NUM_BATCHES, DIM_BATCHES, ARRIVAL_TIME, SERVICE_TIME1, SERVICE_TIME2, A, B, buffer1, buffer2))
+	""" %(FILENAME, description, duration, P, SIM_TIME, NUM_BATCHES, DIM_BATCHES, ARRIVAL_TIME, SERVICE_TIME1, SERVICE_TIME2, A, B, buffer1, buffer2))
 
 	ans = raw_input("\n\t---> Would you like to plot the results? [Y/N]\t").lower()
 	if ans != "y":
