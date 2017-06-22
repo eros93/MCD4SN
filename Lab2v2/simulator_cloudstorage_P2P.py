@@ -6,22 +6,29 @@ import simpy
 import numpy
 import time
 
+
 RANDOM_SEED = 7
 SIM_TIME = 1000000
 
 # max number of devices in the simulation
-NUM_DEV = 100
+NUM_DEV = 201
+STEP = 5
+
 
 th_file = []
 # number of clients connected (session_on)
 devs = 0
 online_devs = []
+# download traffic CLOUD
 instant_cloud_downtraffic = 0
 cloud_downtraffic = []
+# upload traffic CLOUD
 instant_cloud_uptraffic = 0
 cloud_uptraffic = []
+# P2P traffic
 instant_p2p_traffic = 0
 p2p_traffic = []
+
 # global incremental id for files
 global_id = 0
 
@@ -126,6 +133,7 @@ class Device():
 		self.downloaded_files = []
 		self.individual_uptraffic = []
 		self.individual_downtraffic = []
+		self.individual_contribute = []
 		self.individual_uptraffic.append(0)
 		self.individual_downtraffic.append(0)
 		# fancy printing as string
@@ -168,19 +176,43 @@ class Device():
 							if peer.logout_time < self.env.now + transfer_time:
 								# check if i have enough remaining time before log out
 								if maxtime > self.env.now + transfer_time:
+									# take global p2p statistics
+									instant_p2p_traffic += (2*down_throughput)  # we consider the global p2p down traffic equal
+									p2p_traffic.append(instant_p2p_traffic)     # to up traffic ( so it is multiplied by 2)
 									# take individual statistics
 									self.individual_downtraffic.append(self.individual_downtraffic[-1] + down_throughput)
 									peer.individual_uptraffic.append(peer.individual_uptraffic[-1] + down_throughput)
-									# take global p2p statistics
-									instant_p2p_traffic += (2*down_throughput)  # we consider the global p2p down traffic equal
-									p2p_traffic.append(instant_p2p_traffic)     # to up traffic (multiplied by 2)
+									if(instant_p2p_traffic != 0.0):
+										self.individual_contribute.append((self.individual_uptraffic[-1]+self.individual_downtraffic[-1])/instant_p2p_traffic)
+										peer.individual_contribute.append((peer.individual_uptraffic[-1]+peer.individual_downtraffic[-1])/instant_p2p_traffic)
+										# print self.individual_contribute[-1]
+										# print peer.individual_contribute[-1]
+									else:
+										self.individual_contribute.append(0.0)
+										peer.individual_contribute.append(0.0)
+										# print self.individual_contribute[-1]
+										# print peer.individual_contribute[-1]
+
 									yield self.env.timeout(transfer_time)
 									# upload the list of downloaded files
 									self.downloaded_files.append(file)
-									self.individual_downtraffic.append(self.individual_downtraffic[-1] - down_throughput)
-									peer.individual_uptraffic.append(peer.individual_uptraffic[-1] - down_throughput)
+									# take global p2p statistics
 									instant_p2p_traffic -= (2*down_throughput)
 									p2p_traffic.append(instant_p2p_traffic)
+									# take individual statistics
+									self.individual_downtraffic.append(self.individual_downtraffic[-1] - down_throughput)
+									peer.individual_uptraffic.append(peer.individual_uptraffic[-1] - down_throughput)
+									if(instant_p2p_traffic != 0.0):
+										self.individual_contribute.append((self.individual_uptraffic[-1]+self.individual_downtraffic[-1])/instant_p2p_traffic)
+										peer.individual_contribute.append((peer.individual_uptraffic[-1]+peer.individual_downtraffic[-1])/instant_p2p_traffic)
+										# print self.individual_contribute[-1]
+										# print peer.individual_contribute[-1]
+									else:
+										self.individual_contribute.append(0.0)
+										peer.individual_contribute.append(0.0)
+										# print self.individual_contribute[-1]
+										# print peer.individual_contribute[-1]
+
 									server_flag = False
 									# print "Device %r downloaded File %r from peer %r at %r" %(self.id, file.id, peer.id, self.env.now)
 									break
@@ -369,12 +401,13 @@ if __name__ == '__main__':
 	mean_p2p_traffic = []
 	mean_peer_downtraffic = []
 	mean_peer_uptraffic = []
+	mean_peer_contribute = []
 
-
-	for N in range(2, NUM_DEV):
+	for N in range(5, NUM_DEV, STEP):
 
 		peer_downtraffic = []
 		peer_uptraffic = []
+		peer_contribute = []
 
 		# reset the global variables for a new run
 		reset_global_vars()
@@ -408,12 +441,17 @@ if __name__ == '__main__':
 		for peerID in devices:
 			peer_downtraffic.append(numpy.mean(devices[peerID].individual_downtraffic))
 			peer_uptraffic.append(numpy.mean(devices[peerID].individual_uptraffic))
+			if devices[peerID].individual_contribute:
+				peer_contribute.append(numpy.mean(devices[peerID].individual_contribute))
+			else:
+				peer_contribute.append(0.0)
 
 		mean_active_devs.append(numpy.mean(online_devs))
 		mean_cloud_download.append(numpy.mean(cloud_downtraffic))
 		mean_cloud_upload.append(numpy.mean(cloud_uptraffic))
 		mean_peer_downtraffic.append(numpy.mean(peer_downtraffic))
 		mean_peer_uptraffic.append(numpy.mean(peer_uptraffic))
+		mean_peer_contribute.append(numpy.mean(peer_contribute))
 		mean_p2p_traffic.append(numpy.mean(p2p_traffic))
 
 		# print "Mean # of active devices: ", numpy.mean(online_devs)
@@ -421,6 +459,7 @@ if __name__ == '__main__':
 		# print "Mean server upload traffic: ", numpy.mean(cloud_uptraffic)
 		# print "Mean peer download traffic: ", numpy.mean(peer_downtraffic)
 		# print "Mean peer upload traffic: ", numpy.mean(peer_uptraffic)
+		# print "Mean peer contribution: ", numpy.mean(peer_contribute)
 		# print "Mean global p2p traffic: ", numpy.mean(p2p_traffic)
 
 		# fig, (active_devices, cloud_download_trf, cloud_upload_trf) = pyplot.subplots(3,1)
@@ -444,14 +483,17 @@ if __name__ == '__main__':
 		# pyplot.hist(cloud_downtraffic, bins=100)
 		# pyplot.show()
 
-	print "mean_active_devs: ", mean_active_devs
-	print "mean_cloud_download: ", mean_cloud_download
-	print "mean_cloud_upload: ", mean_cloud_upload
-	print "mean_p2p_traffic: ", mean_p2p_traffic
-	print "mean_peer_downtraffic", mean_peer_downtraffic
-	print "mean_peer_uptraffic", mean_peer_uptraffic
+	# print "mean_active_devs: ", mean_active_devs
+	# print "mean_cloud_download: ", mean_cloud_download
+	# print "mean_cloud_upload: ", mean_cloud_upload
+	# print "mean_p2p_traffic: ", mean_p2p_traffic
+	# print "mean_peer_downtraffic", mean_peer_downtraffic
+	# print "mean_peer_uptraffic", mean_peer_uptraffic
+	# print "mean_peer_contribute", mean_peer_contribute
 
-	fig, (active_devices, download_trf, upload_trf) = pyplot.subplots(3, 1)
+	fig_cloud, (active_devices, download_trf, upload_trf) = pyplot.subplots(3, 1)
+	pyplot.title("Cloud Servers statistics")
+
 	num = numpy.linspace(2, NUM_DEV, len(mean_active_devs))
 	active_devices.plot(num, mean_active_devs)
 	active_devices.set_xlabel("N - Number of devices")
@@ -469,21 +511,32 @@ if __name__ == '__main__':
 	upload_trf.set_xlabel("N - Number of devices")
 	upload_trf.set_ylabel("Mean Cloud Upload traffic")
 
-	fig, (p2p_traffic, peer_downtraffic, peer_uptraffic) = pyplot.subplots(3, 1)
+
+
+	fig_p2p, (p2p_trf, peer_down_trf, peer_up_trf) = pyplot.subplots(3, 1)
+	pyplot.title("P2P statistics")
+
 	num = numpy.linspace(2, NUM_DEV, len(mean_p2p_traffic))
-	p2p_traffic.plot(num, mean_p2p_traffic)
-	p2p_traffic.set_xlabel("N - Number of devices")
-	p2p_traffic.set_ylabel("Mean p2p Global traffic")
+	p2p_trf.plot(num, mean_p2p_traffic)
+	p2p_trf.set_xlabel("N - Number of devices")
+	p2p_trf.set_ylabel("Mean p2p Global traffic")
 
 	del num
 	num = numpy.linspace(2, NUM_DEV, len(mean_peer_downtraffic))
-	peer_downtraffic.plot(num, mean_peer_downtraffic)
-	peer_downtraffic.set_xlabel("N - Number of devices")
-	peer_downtraffic.set_ylabel("Mean peer Download traffic")
+	peer_down_trf.plot(num, mean_peer_downtraffic)
+	peer_down_trf.set_xlabel("N - Number of devices")
+	peer_down_trf.set_ylabel("Mean peer Download traffic")
 
 	del num
 	num = numpy.linspace(2, NUM_DEV, len(mean_peer_uptraffic))
-	peer_uptraffic.plot(num, mean_peer_uptraffic)
-	peer_uptraffic.set_xlabel("N - Number of devices")
-	peer_uptraffic.set_ylabel("Mean peer Upload traffic")
+	peer_up_trf.plot(num, mean_peer_uptraffic)
+	peer_up_trf.set_xlabel("N - Number of devices")
+	peer_up_trf.set_ylabel("Mean peer Upload traffic")
+
+	fig_peercontribute = pyplot.figure()
+	del num
+	num = numpy.linspace(2, NUM_DEV, len(mean_peer_contribute))
+	pyplot.plot(num, mean_peer_contribute)
+	pyplot.title("Peer mean contribution")
+	
 	pyplot.show()

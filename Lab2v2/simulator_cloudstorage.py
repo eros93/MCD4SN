@@ -11,15 +11,18 @@ RANDOM_SEED = 7
 SIM_TIME = 1000000
 
 # max number of devices in the simulation
-NUM_DEV = 100
+NUM_DEV = 201
+STEP = 5
 
 
 th_file = []
 # number of clients connected (session_on)
 devs = 0
 online_devs = []
+# download traffic CLOUD
 instant_downtraffic = 0
 downtraffic = []
+# upload traffic CLOUD
 instant_uptraffic = 0
 uptraffic = []
 
@@ -316,84 +319,84 @@ if __name__ == '__main__':
     mean_download_trf = []
     mean_upload_trf = []
 
-    # for N in range(2,NUM_DEV):
+    for N in range(5,NUM_DEV,STEP): 
 
-    # reset the global variables for a new run
-    reset_global_vars()
+        # reset the global variables for a new run
+        reset_global_vars()
 
-    # collection of devices
-    devices = {}
+        # collection of devices
+        devices = {}
 
-    # collection of shared folders
-    shared_folders = {}
+        # collection of shared folders
+        shared_folders = {}
 
-    # set the random seed
-    random.seed(RANDOM_SEED)
+        # set the random seed
+        random.seed(RANDOM_SEED)
 
-    # create the content sharing network
-    generate_network(NUM_DEV, devices, shared_folders)
+        # create the content sharing network
+        generate_network(N, devices, shared_folders)
 
-    # generates the environment (equal for all the elements in simulation)
-    env = simpy.Environment()
+        # generates the environment (equal for all the elements in simulation)
+        env = simpy.Environment()
 
-    # DEBUG: dumping the network
-    # for dev_id in devices:
-    #     print str(devices[dev_id])
+        # DEBUG: dumping the network
+        # for dev_id in devices:
+        #     print str(devices[dev_id])
 
-    for dev_id in devices:
-        devices[dev_id].env = env
-        env.process(devices[dev_id].process())
+        for dev_id in devices:
+            devices[dev_id].env = env
+            env.process(devices[dev_id].process())
 
-    env.run(until=SIM_TIME)
+        env.run(until=SIM_TIME)
 
-    # Statistics
+        # Statistics
 
-    mean_active_devs.append(numpy.mean(online_devs))
-    mean_download_trf.append(numpy.mean(downtraffic))
-    mean_upload_trf.append(numpy.mean(uptraffic))
+        mean_active_devs.append(numpy.mean(online_devs))
+        mean_download_trf.append(numpy.mean(downtraffic))
+        mean_upload_trf.append(numpy.mean(uptraffic))
 
-    print "Mean # of active devices: ", numpy.mean(online_devs)
-    print "Mean download traffic: ", numpy.mean(downtraffic)
-    print "Mean upload traffic: ", numpy.mean(uptraffic)
+        # print "Mean # of active devices: ", numpy.mean(online_devs)
+        # print "Mean download traffic: ", numpy.mean(downtraffic)
+        # print "Mean upload traffic: ", numpy.mean(uptraffic)
 
+        # fig, (active_devices, download_trf, upload_trf) = pyplot.subplots(3,1)
+
+        # active_devices.plot(online_devs)
+        # active_devices.set_ylabel("Number of ACTIVE devices")
+
+        # download_trf.plot(downtraffic)
+        # download_trf.set_ylabel("Download traffic")
+
+        # upload_trf.plot(uptraffic)
+        # upload_trf.set_ylabel("Upload traffic")
+
+
+        # pyplot.figure(2)
+        # pyplot.hist(online_devs, bins=100)
+        # pyplot.figure(3)
+        # pyplot.hist(uptraffic, bins=100)
+
+        # pyplot.show()
+
+    print mean_active_devs
+    print mean_download_trf
+    print mean_upload_trf
     fig, (active_devices, download_trf, upload_trf) = pyplot.subplots(3,1)
-
-    active_devices.plot(online_devs)
-    active_devices.set_ylabel("Number of ACTIVE devices")
-
-    download_trf.plot(downtraffic)
-    download_trf.set_ylabel("Download traffic")
-
-    upload_trf.plot(uptraffic)
-    upload_trf.set_ylabel("Upload traffic")
-
-
-    pyplot.figure(2)
-    pyplot.hist(online_devs, bins=100)
-    pyplot.figure(3)
-    pyplot.hist(uptraffic, bins=100)
+    num = numpy.linspace(2, NUM_DEV, len(mean_active_devs))
+    active_devices.plot(num, mean_active_devs)
+    active_devices.set_xlabel("N - Number of devices")
+    active_devices.set_ylabel("Mean # of ACTIVE devices")
+    
+    del num
+    num = numpy.linspace(2, NUM_DEV, len(mean_download_trf))
+    download_trf.plot(num, mean_download_trf)
+    download_trf.set_xlabel("N - Number of devices")
+    download_trf.set_ylabel("Mean Download traffic")
+    
+    del num
+    num = numpy.linspace(2, NUM_DEV, len(mean_upload_trf))
+    upload_trf.plot(num, mean_upload_trf)
+    upload_trf.set_xlabel("N - Number of devices")
+    upload_trf.set_ylabel("Mean Upload traffic")
 
     pyplot.show()
-
-    # print mean_active_devs
-    # print mean_download_trf
-    # print mean_upload_trf
-    # fig, (active_devices, download_trf, upload_trf) = pyplot.subplots(3,1)
-    # num = numpy.linspace(2, NUM_DEV, len(mean_active_devs))
-    # active_devices.plot(num, mean_active_devs)
-    # active_devices.set_xlabel("N - Number of devices")
-    # active_devices.set_ylabel("Mean # of ACTIVE devices")
-    #
-    # del num
-    # num = numpy.linspace(2, NUM_DEV, len(mean_download_trf))
-    # download_trf.plot(num, mean_download_trf)
-    # download_trf.set_xlabel("N - Number of devices")
-    # download_trf.set_ylabel("Mean Download traffic")
-    #
-    # del num
-    # num = numpy.linspace(2, NUM_DEV, len(mean_upload_trf))
-    # upload_trf.plot(num, mean_upload_trf)
-    # upload_trf.set_xlabel("N - Number of devices")
-    # upload_trf.set_ylabel("Mean Upload traffic")
-    #
-    # pyplot.show()
